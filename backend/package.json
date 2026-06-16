@@ -13,7 +13,6 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.5.2",
     "@langchain/core": "^1.1.49",
     "@langchain/textsplitters": "^1.0.1",
     "@prisma/client": "^5.22.0",
@@ -29,6 +28,9 @@
     "openai": "^6.42.0",
     "pdf-parse": "^2.4.5",
     "pg": "^8.21.0",
+    "prisma": "^5.22.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -38,9 +40,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/node": "^20.19.43",
-    "@types/pdf-parse": "^1.1.5",
-    "prisma": "^5.22.0",
-    "tsx": "^4.22.4",
-    "typescript": "^5.9.3"
+    "@types/pdf-parse": "^1.1.5"
   }
 }
