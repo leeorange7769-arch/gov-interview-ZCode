@@ -1,0 +1,270 @@
+// ============================================================
+// 公考面试通 — Prisma 数据库模型
+// 数据库: PostgreSQL + pgvector (RAG 知识库)
+// 环境: 生产 / Railway 部署
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector(map: "vector", schema: "public"), pgcrypto]
+}
+
+// ============================================================
+// 枚举定义
+// ============================================================
+
+/// 用户角色
+enum Role {
+  ADMIN
+  USER
+}
+
+/// AI 分析类型
+enum AnalysisType {
+  PRACTICE
+  EXAM
+  PROGRESS
+}
+
+// ============================================================
+// 1. Users — 用户表
+// ============================================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(USER)
+  avatar       String?
+  refreshToken String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  examRecords      ExamRecord[]
+  practiceRecords  PracticeRecord[]
+  learningProgress LearningProgress[]
+  aiAnalyses       AIAnalysis[]
+  knowledgeBases   KnowledgeBase[]
+
+  @@map("users")
+}
+
+// ============================================================
+// 2. Questions — 题库表
+// ============================================================
+
+model Question {
+  id              String  @id @default(uuid())
+  title           String
+  category        String
+  domain          String
+  tags            String  @default("[]")
+  answer          String
+  hint            String?
+  difficulty      Int?    @default(1)
+  difficultyLevel String?
+  categoryId      String?
+  status          String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questionCategory Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  questionSetItems  QuestionSetItem[]
+  practiceRecords   PracticeRecord[]
+
+  @@map("questions")
+}
+
+// ============================================================
+// 2b. Categories — 题型分类树表
+// ============================================================
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Category[] @relation("CategoryTree")
+  sortOrder Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions Question[]
+
+  @@map("categories")
+}
+
+// ============================================================
+// QuestionSets — 题本 / 模拟套卷
+// ============================================================
+
+model QuestionSet {
+  id        String   @id @default(uuid())
+  title     String
+  timeLimit Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items        QuestionSetItem[]
+  examRecords  ExamRecord[]
+
+  @@map("question_sets")
+}
+
+model QuestionSetItem {
+  id            String @id @default(uuid())
+  questionSetId String
+  questionId    String
+  sortOrder     Int    @default(0)
+
+  questionSet QuestionSet @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionSetId, questionId])
+  @@map("question_set_items")
+}
+
+// ============================================================
+// 3. ExamRecords — 模拟考试记录表
+// ============================================================
+
+model ExamRecord {
+  id             String   @id @default(uuid())
+  userId         String
+  questionSetId  String
+  score          Int
+  totalQuestions Int
+  timeSpent      Int?
+  timeUp         Boolean  @default(false)
+  answers        String   @default("[]")
+  details        String   @default("[]")
+
+  createdAt DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionSet QuestionSet @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+  aiAnalyses  AIAnalysis[]
+
+  @@map("exam_records")
+}
+
+// ============================================================
+// 4. PracticeRecords — 单题练习记录表
+// ============================================================
+
+model PracticeRecord {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  userAnswer String
+  score      Int
+  dimensions String   @default("{}")
+  matchedTags String  @default("[]")
+  missedTags  String  @default("[]")
+  comments    String  @default("[]")
+
+  createdAt DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  aiAnalyses AIAnalysis[]
+
+  @@map("practice_records")
+}
+
+// ============================================================
+// 5. LearningProgress — 学习进度表
+// ============================================================
+
+model LearningProgress {
+  id              String    @id @default(uuid())
+  userId          String
+  category        String
+  totalPractices  Int       @default(0)
+  avgScore        Float     @default(0)
+  dimensions      String    @default("{}")
+  lastPracticedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@map("learning_progress")
+}
+
+// ============================================================
+// 6. AIAnalysis — AI 分析结果表
+// ============================================================
+
+model AIAnalysis {
+  id                  String       @id @default(uuid())
+  userId              String
+  practiceRecordId    String?
+  examRecordId        String?
+  analysisType        AnalysisType
+  analysis            String       @default("{}")
+  suggestions         String       @default("[]")
+  strengthsWeaknesses String       @default("{}")
+
+  createdAt DateTime @default(now())
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  practiceRecord PracticeRecord? @relation(fields: [practiceRecordId], references: [id], onDelete: SetNull)
+  examRecord     ExamRecord?    @relation(fields: [examRecordId], references: [id], onDelete: SetNull)
+
+  @@map("ai_analyses")
+}
+
+// ============================================================
+// 7. KnowledgeBase — 知识库 / 笔记本
+// ============================================================
+
+model KnowledgeBase {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+
+  @@map("knowledge_bases")
+}
+
+// ============================================================
+// 8. Document — 文档分块（含 pgvector 向量）
+// ============================================================
+
+model Document {
+  id              String   @id @default(uuid())
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  fileName        String
+  fileType        String
+  chunkIndex      Int
+  content         String
+  embedding       Unsupported("vector(1536)")
+  metadata        String   @default("{}")
+
+  createdAt DateTime @default(now())
+
+  @@index([knowledgeBaseId])
+  @@map("documents")
+}

@@ -1,0 +1,154 @@
+@import "tw-animate-css";
+@import "@fontsource-variable/geist";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+}
+
+.dark {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-border: #374151;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #9ca3af;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* 暗黑模式下的全局过渡 */
+html.dark body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+/* 暗黑模式下输入框/文本框样式 */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #374151;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* 滚动条隐藏工具类 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 自定义滚动条（暗黑模式适配） */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+  }
+  :root {
+    --background: oklch(0.985 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.35 0.17 264);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.55 0.22 264);
+    --chart-1: oklch(0.55 0.22 264);
+    --chart-2: oklch(0.45 0.18 200);
+    --chart-3: oklch(0.40 0.15 160);
+    --chart-4: oklch(0.50 0.20 80);
+    --chart-5: oklch(0.45 0.22 30);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.30 0.14 264);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.55 0.22 264);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.35 0.15 264);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.40 0.16 264);
+    --sidebar-ring: oklch(0.55 0.22 264);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.55 0.22 264);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.55 0.22 264);
+    --chart-1: oklch(0.55 0.22 264);
+    --chart-2: oklch(0.45 0.18 200);
+    --chart-3: oklch(0.40 0.15 160);
+    --chart-4: oklch(0.50 0.20 80);
+    --chart-5: oklch(0.45 0.22 30);
+    --sidebar: oklch(0.25 0.12 264);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.55 0.22 264);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.30 0.13 264);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.35 0.14 264);
+    --sidebar-ring: oklch(0.55 0.22 264);
+  }
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+}
